@@ -36,15 +36,26 @@ export function PasswordGenerator() {
     setPassword(Array.from({ length }, () => alphabet[randomInt(alphabet.length)]).join(""));
   }
   async function copy() { await navigator.clipboard.writeText(password); toast.success("Password copied."); }
-  const score = strength(password);
+    const score = strength(password);
+  const characterOptions: Array<{
+    label: string;
+    checked: boolean;
+    setter: (value: boolean) => void;
+  }> = [
+    { label: "Uppercase", checked: upper, setter: setUpper },
+    { label: "Lowercase", checked: lower, setter: setLower },
+    { label: "Numbers", checked: numbers, setter: setNumbers },
+    { label: "Symbols", checked: symbols, setter: setSymbols }
+  ];
 
   return (
     <div className="space-y-5">
       <p className="rounded-lg border bg-muted/50 p-3 text-sm text-muted-foreground">Privacy note: passwords are generated client-side with the Web Crypto API, never sent to the server, and never stored.</p>
       <div className="grid gap-4 sm:grid-cols-2"><label className="text-sm">Length<Input type="number" min="8" max="128" value={length} onChange={(e)=>setLength(Number(e.target.value))} /></label><label className="mt-6 flex items-center gap-2 text-sm"><input type="checkbox" checked={passphrase} onChange={(e)=>setPassphrase(e.target.checked)} /> Passphrase mode</label></div>
-      <div className="grid gap-2 sm:grid-cols-2">{[["Uppercase",upper,setUpper],["Lowercase",lower,setLower],["Numbers",numbers,setNumbers],["Symbols",symbols,setSymbols]].map(([label,checked,setter]) => <label key={String(label)} className="flex items-center gap-2 text-sm"><input type="checkbox" checked={checked as boolean} onChange={(e)=>(setter as any)(e.target.checked)} disabled={passphrase} /> {label}</label>)}</div>
+      <div className="grid gap-2 sm:grid-cols-2">{characterOptions.map((option) => <label key={option.label} className="flex items-center gap-2 text-sm"><input type="checkbox" checked={option.checked} onChange={(e)=>option.setter(e.target.checked)} disabled={passphrase} /> {option.label}</label>)}</div>
       <Button onClick={generate}>Generate</Button>
       {password && <div className="rounded-xl border bg-muted/40 p-4"><div className="break-all font-mono text-lg">{password}</div><div className="mt-4"><Progress value={score} /></div><div className="mt-2 text-sm text-muted-foreground">Strength: {score < 50 ? "Weak" : score < 75 ? "Good" : "Strong"}</div><Button className="mt-4" variant="outline" onClick={copy}>Copy to clipboard</Button></div>}
     </div>
   );
 }
+
