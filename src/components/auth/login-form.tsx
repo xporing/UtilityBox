@@ -28,8 +28,7 @@ export function LoginForm() {
       return;
     }
     toast.success("Welcome back.");
-    router.push(params.get("next") || "/dashboard");
-    router.refresh();
+    window.location.href = params.get("next") || "/dashboard";
   }
 
   return (
@@ -49,3 +48,4 @@ export function LoginForm() {
     </Card>
   );
 }
+
