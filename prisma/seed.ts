@@ -4,18 +4,19 @@ import { hash } from "bcryptjs";
 const prisma = new PrismaClient();
 
 async function main() {
-  const email = process.env.SEED_ADMIN_EMAIL ?? "admin@example.com";
+  const email = (process.env.SEED_ADMIN_EMAIL ?? "admin@example.com").toLowerCase();
   const password = process.env.SEED_ADMIN_PASSWORD ?? "ChangeMe123!Strong";
   const name = process.env.SEED_ADMIN_NAME ?? "UtilityBox Admin";
 
-  const existing = await prisma.user.findUnique({ where: { email } });
-  if (existing) {
-    console.log(`Admin already exists: ${email}`);
-    return;
-  }
-
-  await prisma.user.create({
-    data: {
+  await prisma.user.upsert({
+    where: { email },
+    update: {
+      name,
+      passwordHash: await hash(password, 12),
+      role: "admin",
+      status: "active"
+    },
+    create: {
       email,
       name,
       passwordHash: await hash(password, 12),
@@ -24,7 +25,7 @@ async function main() {
     }
   });
 
-  console.log(`Seeded admin: ${email}`);
+  console.log(`Admin ready: ${email}`);
 }
 
 main()
