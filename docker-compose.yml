@@ -1,0 +1,30 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: utilitybox
+      POSTGRES_USER: utilitybox
+      POSTGRES_PASSWORD: utilitybox
+    ports:
+      - "5432:5432"
+    volumes:
+      - utilitybox_pg:/var/lib/postgresql/data
+
+  app:
+    build: .
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgresql://utilitybox:utilitybox@db:5432/utilitybox?schema=public
+      AUTH_URL: http://localhost:3000
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      AUTH_SECRET: replace-with-a-random-secret-from-openssl-rand-base64-32
+      ALLOW_PUBLIC_REGISTRATION: "false"
+      REQUIRE_INVITE_CODE: "true"
+      MAX_UPLOAD_MB: "50"
+    ports:
+      - "3000:3000"
+
+volumes:
+  utilitybox_pg:

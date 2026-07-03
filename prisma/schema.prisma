@@ -1,0 +1,64 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  admin
+  user
+}
+
+enum UserStatus {
+  active
+  disabled
+}
+
+model User {
+  id           String      @id @default(cuid())
+  email        String      @unique
+  name         String?
+  passwordHash String
+  role         Role        @default(user)
+  status       UserStatus  @default(active)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  lastLoginAt  DateTime?
+
+  invites      Invite[]    @relation("InviteCreator")
+  toolUsage    ToolUsage[]
+}
+
+model Invite {
+  id        String    @id @default(cuid())
+  email     String?
+  token     String    @unique
+  role      Role      @default(user)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdBy String?
+  createdAt DateTime  @default(now())
+
+  creator   User?     @relation("InviteCreator", fields: [createdBy], references: [id], onDelete: SetNull)
+
+  @@index([token])
+  @@index([email])
+}
+
+model ToolUsage {
+  id        String   @id @default(cuid())
+  userId    String
+  toolName  String
+  action    String
+  fileSize  Int?
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([toolName])
+  @@index([createdAt])
+}
