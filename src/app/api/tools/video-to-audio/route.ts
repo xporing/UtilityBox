@@ -48,7 +48,8 @@ export async function POST(request: Request) {
     await runFfmpeg(["-y", "-i", inputPath, ...codecs[format], ...bitrate, outputPath]);
     const output = await readFile(outputPath);
     await logToolUsage({ userId: user.id, toolName: "Video to Audio", action: `extract-${format}`, fileSize: file.size });
-    return new Response(output, { headers: { "content-type": format === "wav" ? "audio/wav" : format === "m4a" ? "audio/mp4" : "audio/mpeg", "content-disposition": `attachment; filename="${outputName}"`, "x-filename": outputName } });
+    return new Response(new Uint8Array(output), { headers: { "content-type": format === "wav" ? "audio/wav" : format === "m4a" ? "audio/mp4" : "audio/mpeg", "content-disposition": `attachment; filename="${outputName}"`, "x-filename": outputName } });
   } catch (error) { return handleRouteError(error); }
   finally { if (dir) await rm(dir, { recursive: true, force: true }).catch(() => {}); }
 }
+

@@ -37,12 +37,13 @@ export async function POST(request: Request) {
     if (!outputs.length) return jsonError(errors.join(" ") || "No files could be converted.");
 
     if (outputs.length === 1) {
-      return new Response(outputs[0].data, { headers: { "content-type": `image/${format === "jpg" ? "jpeg" : format}`, "content-disposition": `attachment; filename="${outputs[0].name}"`, "x-filename": outputs[0].name } });
+      return new Response(new Uint8Array(outputs[0].data), { headers: { "content-type": `image/${format === "jpg" ? "jpeg" : format}`, "content-disposition": `attachment; filename="${outputs[0].name}"`, "x-filename": outputs[0].name } });
     }
     const zip = new JSZip();
     outputs.forEach((out) => zip.file(out.name, out.data));
     if (errors.length) zip.file("errors.txt", errors.join("\n"));
     const zipped = await zip.generateAsync({ type: "nodebuffer" });
-    return new Response(zipped, { headers: { "content-type": "application/zip", "content-disposition": 'attachment; filename="converted-images.zip"', "x-filename": "converted-images.zip" } });
+    return new Response(new Uint8Array(zipped), { headers: { "content-type": "application/zip", "content-disposition": 'attachment; filename="converted-images.zip"', "x-filename": "converted-images.zip" } });
   } catch (error) { return handleRouteError(error); }
 }
+

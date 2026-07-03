@@ -33,9 +33,10 @@ export async function POST(request: Request) {
       summary.push(`${file.name}: ${file.size} -> ${data.length} bytes (${saved}% saved)`);
       await logToolUsage({ userId: user.id, toolName: "Image Compressor", action: lossless ? "lossless" : `quality-${quality}`, fileSize: file.size });
     }
-    if (outputs.length === 1) return new Response(outputs[0].data, { headers: { "content-type": "image/webp", "content-disposition": `attachment; filename="${outputs[0].name}"`, "x-filename": outputs[0].name, "x-compression-summary": summary[0] } });
+    if (outputs.length === 1) return new Response(new Uint8Array(outputs[0].data), { headers: { "content-type": "image/webp", "content-disposition": `attachment; filename="${outputs[0].name}"`, "x-filename": outputs[0].name, "x-compression-summary": summary[0] } });
     const zip = new JSZip(); outputs.forEach((out) => zip.file(out.name, out.data)); zip.file("summary.txt", summary.join("\n"));
     const zipped = await zip.generateAsync({ type: "nodebuffer" });
-    return new Response(zipped, { headers: { "content-type": "application/zip", "content-disposition": 'attachment; filename="compressed-images.zip"', "x-filename": "compressed-images.zip" } });
+    return new Response(new Uint8Array(zipped), { headers: { "content-type": "application/zip", "content-disposition": 'attachment; filename="compressed-images.zip"', "x-filename": "compressed-images.zip" } });
   } catch (error) { return handleRouteError(error); }
 }
+

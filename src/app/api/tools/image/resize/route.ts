@@ -28,6 +28,7 @@ export async function POST(request: Request) {
       .toBuffer();
     await logToolUsage({ userId: user.id, toolName: "Image Resizer", action: `${metadata.width || "?"}x${metadata.height || "?"}-to-${targetWidth}x${targetHeight}`, fileSize: file.size });
     const name = `${slugFileName(file.name.replace(/\.[^.]+$/, ""))}-resized.webp`;
-    return new Response(data, { headers: { "content-type": "image/webp", "content-disposition": `attachment; filename="${name}"`, "x-filename": name } });
+    return new Response(new Uint8Array(data), { headers: { "content-type": "image/webp", "content-disposition": `attachment; filename="${name}"`, "x-filename": name } });
   } catch (error) { return handleRouteError(error); }
 }
+
