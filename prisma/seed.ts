@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { hash } from "bcryptjs";
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
@@ -8,18 +8,20 @@ async function main() {
   const password = process.env.SEED_ADMIN_PASSWORD ?? "ChangeMe123!Strong";
   const name = process.env.SEED_ADMIN_NAME ?? "UtilityBox Admin";
 
+  const passwordHash = await bcrypt.hash(password, 12);
+
   await prisma.user.upsert({
     where: { email },
     update: {
       name,
-      passwordHash: await hash(password, 12),
+      passwordHash,
       role: "admin",
       status: "active"
     },
     create: {
       email,
       name,
-      passwordHash: await hash(password, 12),
+      passwordHash,
       role: "admin",
       status: "active"
     }
@@ -34,5 +36,5 @@ main()
     process.exit(1);
   })
   .finally(async () => {
-    prisma.$disconnect();
+    await prisma.$disconnect();
   });
